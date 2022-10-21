@@ -58,20 +58,48 @@ export const Editor: React.FC = () => {
         )
       }
       {
-        fps.map((fpCenter, fpi) => (
-          <rect
-            key={fpi}
-            className={
-              checkFP(state.bitmap, fpCenter)
-                ? "indicator indicator-ok"
-                : "indicator indicator-error"
-            }
-            y={`${(fpCenter.y - 3) * PIXEL_SIZE}px`}
-            x={`${(fpCenter.x - 3) * PIXEL_SIZE}px`}
-            height={`${7 * PIXEL_SIZE}px`}
-            width={`${7 * PIXEL_SIZE}px`}
-          />
-        ))
+        fps.map((fpCenter, fpi) =>
+          checkFP(state.bitmap, fpCenter, true)
+          ? (
+            <rect
+              key={fpi}
+              className="indicator indicator-ok"
+              y={`${(fpCenter.y - 3) * PIXEL_SIZE}px`}
+              x={`${(fpCenter.x - 3) * PIXEL_SIZE}px`}
+              height={`${7 * PIXEL_SIZE}px`}
+              width={`${7 * PIXEL_SIZE}px`}
+            />
+          )
+          : checkFP(state.bitmap, fpCenter, false)
+          ? (
+            <path
+              key={fpi}
+              className="indicator indicator-error"
+              d={[
+                `M ${(fpCenter.x - 4) * PIXEL_SIZE} ${(fpCenter.y - 4) * PIXEL_SIZE}`,
+                `L ${(fpCenter.x - 4) * PIXEL_SIZE} ${(fpCenter.y + 5) * PIXEL_SIZE}`,
+                `L ${(fpCenter.x + 5) * PIXEL_SIZE} ${(fpCenter.y + 5) * PIXEL_SIZE}`,
+                `L ${(fpCenter.x + 5) * PIXEL_SIZE} ${(fpCenter.y - 4) * PIXEL_SIZE}`,
+                "Z",
+                `M ${(fpCenter.x - 3) * PIXEL_SIZE} ${(fpCenter.y - 3) * PIXEL_SIZE}`,
+                `L ${(fpCenter.x + 4) * PIXEL_SIZE} ${(fpCenter.y - 3) * PIXEL_SIZE}`,
+                `L ${(fpCenter.x + 4) * PIXEL_SIZE} ${(fpCenter.y + 4) * PIXEL_SIZE}`,
+                `L ${(fpCenter.x - 3) * PIXEL_SIZE} ${(fpCenter.y + 4) * PIXEL_SIZE}`,
+                "Z",
+              ].join(" ")}
+            />
+          )
+          : (
+            <rect
+              key={fpi}
+              className="indicator indicator-error"
+              y={`${(fpCenter.y - 3) * PIXEL_SIZE}px`}
+              x={`${(fpCenter.x - 3) * PIXEL_SIZE}px`}
+              height={`${7 * PIXEL_SIZE}px`}
+              width={`${7 * PIXEL_SIZE}px`}
+            />
+          )
+        )
       }
     </svg>
   );
@@ -130,9 +158,10 @@ function detectFP(bitmap: Bitmap): readonly FP[] {
 }
 
 const DIST_TO_BIT = [1, 1, 0, 1, 0] as const;
-function checkFP(bitmap: Bitmap, fp: FP): boolean {
-  for (let dy = -3; dy <= 3; ++dy) {
-    for (let dx = -3; dx <= 3; ++dx) {
+function checkFP(bitmap: Bitmap, fp: FP, extend: boolean): boolean {
+  const limit = extend ? 4 : 3;
+  for (let dy = -limit; dy <= limit; ++dy) {
+    for (let dx = -limit; dx <= limit; ++dx) {
       const dist = Math.max(Math.abs(dy), Math.abs(dx));
       const expectBit = DIST_TO_BIT[dist];
       if (bitmap[fp.y + dy][fp.x + dx] !== expectBit) return false;

@@ -3,7 +3,7 @@
 }
 
 .indicator.indicator-ok {
-  fill: rgba(0, 0, 255, 0.5);
+  fill: rgba(0, 0, 255, 0.3);
 }
 
 .indicator.indicator-error {
