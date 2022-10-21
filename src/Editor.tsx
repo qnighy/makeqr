@@ -1,5 +1,5 @@
 import React, { useReducer, useRef } from "react";
-import immer from "immer";
+import { checkFP, detectFP, initialState, reducer } from "./state";
 import "./Editor.css";
 
 const PIXEL_SIZE = 10;
@@ -107,65 +107,4 @@ export const Editor: React.FC = () => {
 
 function isPressed(buttons: number): boolean {
   return (buttons & 1) === 1;
-}
-
-type Action = FooAction | PaintAction;
-type FooAction = {
-  type: "Foo";
-};
-type PaintAction = {
-  type: "Paint";
-  yi: number;
-  xi: number;
-  bit: number;
-};
-
-type State = {
-  readonly bitmap: Bitmap;
-};
-
-type Bitmap = readonly (readonly number[])[];
-
-const initialState: State = {
-  bitmap: new Array(60).fill(0).map(() => new Array(60).fill(0)),
-}
-
-function reducer(prevState: State, action: Action): State {
-  return immer<State>(prevState, (draft) => {
-    switch (action.type) {
-      case "Foo":
-        break;
-      case "Paint":
-        draft.bitmap[action.yi][action.xi] = action.bit;
-        break;
-      default:
-        throw new Error(`Invalid action type: ${(action as { type: "$invalid" }).type}`)
-    }
-  });
-}
-
-type FP = {
-  readonly y: number;
-  readonly x: number;
-};
-
-function detectFP(bitmap: Bitmap): readonly FP[] {
-  return [
-    { y: 7, x: 7 },
-    { y: 21, x: 7 },
-    { y: 7, x: 21 },
-  ];
-}
-
-const DIST_TO_BIT = [1, 1, 0, 1, 0] as const;
-function checkFP(bitmap: Bitmap, fp: FP, extend: boolean): boolean {
-  const limit = extend ? 4 : 3;
-  for (let dy = -limit; dy <= limit; ++dy) {
-    for (let dx = -limit; dx <= limit; ++dx) {
-      const dist = Math.max(Math.abs(dy), Math.abs(dx));
-      const expectBit = DIST_TO_BIT[dist];
-      if (bitmap[fp.y + dy][fp.x + dx] !== expectBit) return false;
-    }
-  }
-  return true;
 }
