@@ -1,0 +1,21 @@
+.indicator {
+  pointer-events: none;
+}
+
+.indicator.indicator-ok {
+  fill: rgba(0, 0, 255, 0.5);
+}
+
+.indicator.indicator-error {
+  fill: rgba(255, 0, 0, 0.5);
+  animation: indication 1.2s ease-in-out infinite alternate;
+}
+
+@keyframes indication {
+  0% {
+    fill-opacity: 0;
+  }
+  100% {
+    fill-opacity: 1;
+  }
+}

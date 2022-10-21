@@ -1,11 +1,13 @@
 import React, { useReducer, useRef } from "react";
 import immer from "immer";
+import "./Editor.css";
 
-const PIXEL_SIZE = 30;
+const PIXEL_SIZE = 10;
 
 export const Editor: React.FC = () => {
   const [state, dispatch] = useReducer(reducer, initialState);
   const paintMode = useRef<number | null>(null);
+  const fps = detectFP(state.bitmap);
   return (
     <svg
       width={`${state.bitmap[0].length * PIXEL_SIZE}px`}
@@ -55,6 +57,22 @@ export const Editor: React.FC = () => {
           ))
         )
       }
+      {
+        fps.map((fpCenter, fpi) => (
+          <rect
+            key={fpi}
+            className={
+              checkFP(state.bitmap, fpCenter)
+                ? "indicator indicator-ok"
+                : "indicator indicator-error"
+            }
+            y={`${(fpCenter.y - 3) * PIXEL_SIZE}px`}
+            x={`${(fpCenter.x - 3) * PIXEL_SIZE}px`}
+            height={`${7 * PIXEL_SIZE}px`}
+            width={`${7 * PIXEL_SIZE}px`}
+          />
+        ))
+      }
     </svg>
   );
 };
@@ -75,11 +93,13 @@ type PaintAction = {
 };
 
 type State = {
-  readonly bitmap: readonly (readonly number[])[];
+  readonly bitmap: Bitmap;
 };
 
+type Bitmap = readonly (readonly number[])[];
+
 const initialState: State = {
-  bitmap: new Array(20).fill(0).map(() => new Array(20).fill(0)),
+  bitmap: new Array(60).fill(0).map(() => new Array(60).fill(0)),
 }
 
 function reducer(prevState: State, action: Action): State {
@@ -94,4 +114,29 @@ function reducer(prevState: State, action: Action): State {
         throw new Error(`Invalid action type: ${(action as { type: "$invalid" }).type}`)
     }
   });
+}
+
+type FP = {
+  readonly y: number;
+  readonly x: number;
+};
+
+function detectFP(bitmap: Bitmap): readonly FP[] {
+  return [
+    { y: 7, x: 7 },
+    { y: 21, x: 7 },
+    { y: 7, x: 21 },
+  ];
+}
+
+const DIST_TO_BIT = [1, 1, 0, 1, 0] as const;
+function checkFP(bitmap: Bitmap, fp: FP): boolean {
+  for (let dy = -3; dy <= 3; ++dy) {
+    for (let dx = -3; dx <= 3; ++dx) {
+      const dist = Math.max(Math.abs(dy), Math.abs(dx));
+      const expectBit = DIST_TO_BIT[dist];
+      if (bitmap[fp.y + dy][fp.x + dx] !== expectBit) return false;
+    }
+  }
+  return true;
 }
