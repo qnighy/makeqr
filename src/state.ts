@@ -1,8 +1,9 @@
 import immer from "immer";
 
-export type Action = FooAction | PaintAction;
-export type FooAction = {
-  type: "Foo";
+export type Action = StepAction | PaintAction;
+export type StepAction = {
+  type: "Step";
+  newStep: Step;
 };
 export type PaintAction = {
   type: "Paint";
@@ -12,19 +13,24 @@ export type PaintAction = {
 };
 
 export type State = {
+  readonly step: Step;
   readonly bitmap: Bitmap;
 };
+
+export type Step = "EditFP" | "EditTP";
 
 export type Bitmap = readonly (readonly number[])[];
 
 export const initialState: State = {
+  step: "EditFP",
   bitmap: new Array(60).fill(0).map(() => new Array(60).fill(0)),
-}
+};
 
 export function reducer(prevState: State, action: Action): State {
   return immer<State>(prevState, (draft) => {
     switch (action.type) {
-      case "Foo":
+      case "Step":
+        draft.step = action.newStep;
         break;
       case "Paint":
         draft.bitmap[action.yi][action.xi] = action.bit;
