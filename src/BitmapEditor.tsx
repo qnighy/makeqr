@@ -12,7 +12,7 @@ export type BitmapEditorProps = {
 export const BitmapEditor: React.FC<BitmapEditorProps> = (props) => {
   const { state, dispatch } = props;
   const paintMode = useRef<number | null>(null);
-  const fps = detectFP(state.bitmap);
+  const fps = state.step === "EditFP" ? detectFP(state.bitmap) : null;
   return (
     <svg
       width={`${state.bitmap[0].length * PIXEL_SIZE}px`}
@@ -63,7 +63,7 @@ export const BitmapEditor: React.FC<BitmapEditorProps> = (props) => {
         )
       }
       {
-        fps.map((fpCenter, fpi) =>
+        fps && fps.map((fpCenter, fpi) =>
           checkFP(state.bitmap, fpCenter, true)
           ? (
             <rect
@@ -104,6 +104,26 @@ export const BitmapEditor: React.FC<BitmapEditorProps> = (props) => {
               width={`${7 * PIXEL_SIZE}px`}
             />
           )
+        )
+      }
+      {
+        state.step === "EditTP" && (
+          <>
+            <rect
+              className="indicator indicator-error"
+              y={`${10 * PIXEL_SIZE}px`}
+              x={`${11 * PIXEL_SIZE}px`}
+              height={`${1 * PIXEL_SIZE}px`}
+              width={`${7 * PIXEL_SIZE}px`}
+            />
+            <rect
+              className="indicator indicator-error"
+              y={`${11 * PIXEL_SIZE}px`}
+              x={`${10 * PIXEL_SIZE}px`}
+              height={`${7 * PIXEL_SIZE}px`}
+              width={`${1 * PIXEL_SIZE}px`}
+            />
+          </>
         )
       }
     </svg>
