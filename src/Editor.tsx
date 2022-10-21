@@ -1,10 +1,11 @@
-import React, { useReducer } from "react";
+import React, { useReducer, useRef } from "react";
 import immer from "immer";
 
 const PIXEL_SIZE = 30;
 
 export const Editor: React.FC = () => {
   const [state, dispatch] = useReducer(reducer, initialState);
+  const paintMode = useRef<number | null>(null);
   return (
     <svg
       width={`${state.bitmap[0].length * PIXEL_SIZE}px`}
@@ -15,7 +16,7 @@ export const Editor: React.FC = () => {
         y={0}
         width={`${state.bitmap[0].length * PIXEL_SIZE}px`}
         height={`${state.bitmap.length * PIXEL_SIZE}px`}
-        fill="none"
+        fill="gray"
         stroke="black"
       />
       {
@@ -28,13 +29,27 @@ export const Editor: React.FC = () => {
               width={`${PIXEL_SIZE-1}px`}
               height={`${PIXEL_SIZE-1}px`}
               fill={bit ? "black" : "white"}
-              onClick={() => {
+              onMouseDown={() => {
+                paintMode.current = bit ^ 1;
                 dispatch({
                   type: "Paint",
                   yi,
                   xi,
                   bit: bit ^ 1,
-                })
+                });
+              }}
+              onMouseEnter={(e) => {
+                if (isPressed(e.buttons) && paintMode.current != null) {
+                  dispatch({
+                    type: "Paint",
+                    yi,
+                    xi,
+                    bit: paintMode.current,
+                  });
+                }
+              }}
+              onMouseUp={() => {
+                paintMode.current = null;
               }}
             />
           ))
@@ -43,6 +58,10 @@ export const Editor: React.FC = () => {
     </svg>
   );
 };
+
+function isPressed(buttons: number): boolean {
+  return (buttons & 1) === 1;
+}
 
 type Action = FooAction | PaintAction;
 type FooAction = {
